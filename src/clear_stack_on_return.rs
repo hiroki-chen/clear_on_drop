@@ -29,10 +29,10 @@ fn clean_registers() {
 }
 
 /// Calls a closure and overwrites its stack and registers on return.
-/// 
+///
 /// For simplicity, we consider the closure as a FnOnce for most critical
 /// procedures, and do not provide interface for FnMut.
-/// 
+///
 /// # Example
 ///
 /// ```
@@ -46,9 +46,21 @@ pub fn clear_stack_and_regs_on_return<F, R>(pages: usize, f: F) -> R
 where
     F: FnOnce() -> R,
 {
-    let _clear = ClearStackOnDrop { pages, true };
-    let hidden_func = hide_ptr::<&mut dyn FnMut() -> R>(&mut f);
+    let mut f = FnOption::new(f);
+    clear_stack_and_regs_on_return_fnmut(pages, || f.call_mut()).unwrap()
+}
 
+#[inline]
+fn clear_stack_and_regs_on_return_fnmut<F, R>(pages: usize, mut f: F) -> R
+where
+    F: FnMut() -> R,
+{
+    let _clear = ClearStackOnDrop {
+        pages,
+        clean_regs: true,
+    };
+
+    let hidden_func = hide_ptr::<&mut dyn FnMut() -> R>(&mut f);
     hidden_func()
 }
 
@@ -76,7 +88,10 @@ pub fn clear_stack_on_return<F, R>(pages: usize, mut f: F) -> R
 where
     F: FnMut() -> R,
 {
-    let _clear = ClearStackOnDrop { pages, false };
+    let _clear = ClearStackOnDrop {
+        pages,
+        clean_regs: false,
+    };
     // Do not inline f to make sure clear_stack uses the same stack space.
     let hidden_func = hide_ptr::<&mut dyn FnMut() -> R>(&mut f);
     hidden_func()
