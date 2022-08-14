@@ -9,7 +9,6 @@ use crate::hide::{hide_mem, hide_ptr};
 ///    %rdi, %rsi, %rdx, %rcx, %r8 and %r9 is used.
 #[inline]
 #[cfg(target_arch = "x86_64")]
-#[cfg(feature = "sgx")]
 fn clean_registers() {
   unsafe {
     // Is there any need to clear RBP / RSP?
