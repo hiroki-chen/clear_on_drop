@@ -7,7 +7,7 @@ use core::arch::asm;
 /// 1. If the class is MEMORY, pass the argument on the stack.
 /// 2. If the class is INTEGER, the next available register of the sequence
 ///    %rdi, %rsi, %rdx, %rcx, %r8 and %r9 is used.
-#[inline(always)]
+#[inline(never)]
 #[cfg(target_arch = "x86_64")]
 fn clean_registers() {
     unsafe {
