@@ -7,8 +7,8 @@ use core::arch::asm;
 /// 1. If the class is MEMORY, pass the argument on the stack.
 /// 2. If the class is INTEGER, the next available register of the sequence
 ///    %rdi, %rsi, %rdx, %rcx, %r8 and %r9 is used.
-#[inline(never)]
 #[cfg(target_arch = "x86_64")]
+#[inline(always)]
 fn clean_registers() {
     unsafe {
         asm!("xor rax, rax /* {0} */", out(reg) _);
@@ -144,13 +144,11 @@ impl Drop for ClearStackOnDrop {
 /// jz      short loc_188C8
 /// ```
 pub fn clear_stack(pages: usize, clean_regs: bool) {
-    // When the cleaner is about to finish, we write garbage data to all the registers.
-    if pages == 0 && clean_regs {
-        clean_registers();
-    } else {
+    if pages != 0 {
         let mut buf = [0u8; 4096];
         hide_mem(&mut buf); // prevent moving after recursive call
         clear_stack(pages - 1, clean_regs);
         hide_mem(&mut buf); // prevent reuse of stack space for call
+        clean_registers();
     }
 }

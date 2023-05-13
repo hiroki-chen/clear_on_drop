@@ -1,5 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(feature = "nightly", feature(min_specialization))]
+#![feature(naked_functions)]
 #![deny(missing_docs)]
 
 //! Helpers for clearing sensitive data on the stack and heap.
